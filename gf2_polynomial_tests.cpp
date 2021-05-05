@@ -94,6 +94,12 @@ namespace {
     TEST_ASSERT(g3==make_gf2_polynomial({{0,1,1,0,1,0,1,1}}));
   }
   
+  void test_derivative() {
+    gf2_polynomial g1 = make_gf2_polynomial({{0,0,0,3,101,6,8}});
+    gf2_polynomial g2 = derivative(g1);
+    TEST_ASSERT(g2==make_gf2_polynomial({{0,0,1}}));
+  }
+  
 }
 
 
@@ -108,4 +114,5 @@ void run_all_gf2_polynomial_tests() {
   test_add();
   test_sub();
   test_mul();
+  test_derivative();
 }

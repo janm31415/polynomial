@@ -105,7 +105,7 @@ inline gf2_polynomial operator - (const gf2_polynomial& a, const gf2_polynomial&
         b <<= 1;
     }
     return r;
-  */
+*/
 inline gf2_polynomial operator * (const gf2_polynomial& a, const gf2_polynomial& b) {
   uint64_t a_index = 0;
   std::vector<uint64_t> coeff;
@@ -117,6 +117,18 @@ inline gf2_polynomial operator * (const gf2_polynomial& a, const gf2_polynomial&
         coeff[i+a_index] ^= b.coefficients[i];
     }
     ++a_index;
+  }
+  return make_gf2_polynomial(coeff);
+}
+
+inline gf2_polynomial derivative(const gf2_polynomial& p) {
+  std::vector<uint64_t> coeff;
+  coeff.reserve(p.coefficients.size());
+  for (size_t i = 1; i < p.coefficients.size(); ++i) {  
+    if ((i&1)==0 || (p.coefficients[i]&1)==0)
+      coeff.push_back(0);
+    else
+      coeff.push_back(1);
   }
   return make_gf2_polynomial(coeff);
 }
