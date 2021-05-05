@@ -134,6 +134,22 @@ namespace {
     TEST_ASSERT(a/b == div.first);
     TEST_ASSERT(a%b == div.second);
   }
+  
+  void test_gcd() {
+    gf2_polynomial a = make_gf2_polynomial({{0,0,0,1,1}});
+    gf2_polynomial b = make_gf2_polynomial({{0,0,3,4}});
+    gf2_polynomial g = gcd(a, b);
+    TEST_ASSERT(g==make_gf2_polynomial({0,0,1}));
+    TEST_ASSERT(a%g==make_gf2_polynomial({0}));
+    TEST_ASSERT(b%g==make_gf2_polynomial({0}));
+    
+    a = make_gf2_polynomial({{0,0,0,1,1}});
+    b = make_gf2_polynomial({{0,1,3,4}});
+    g = gcd(a, b);
+    TEST_ASSERT(g==make_gf2_polynomial({0,1,1}));
+    TEST_ASSERT(a%g==make_gf2_polynomial({0}));
+    TEST_ASSERT(b%g==make_gf2_polynomial({0}));
+  }
 }
 
 
@@ -151,4 +167,5 @@ void run_all_gf2_polynomial_tests() {
   test_derivative();
   test_xn();
   test_euclidean_division();
+  test_gcd();
 }

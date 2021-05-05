@@ -171,4 +171,16 @@ inline gf2_polynomial operator % (const gf2_polynomial& a, const gf2_polynomial&
   return euclidean_division(a,b).second;
 }
 
+inline gf2_polynomial gcd(gf2_polynomial a, gf2_polynomial b) {
+  if (degree(a)<degree(b))
+    std::swap(a.coefficients, b.coefficients);
+  gf2_polynomial r = a % b;
+  while(!r.coefficients.empty()) {
+    a = b;
+    b = r;
+    r = a % b;
+  }
+  return b;
+}
+
 #endif
