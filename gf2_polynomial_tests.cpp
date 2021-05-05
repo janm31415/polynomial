@@ -154,6 +154,8 @@ namespace {
   void test_hex_to_gf2_polynomial() {
     gf2_polynomial g = hex_to_gf2_polynomial("c");
     TEST_ASSERT(g==make_gf2_polynomial({0,0,1,1}));
+    TEST_ASSERT(gf2_polynomial_to_hex(g)==std::string("c"));
+    TEST_ASSERT(gf2_polynomial_to_hex(hex_to_gf2_polynomial("a466cfdc"))==std::string("a466cfdc"));
   }
 }
 

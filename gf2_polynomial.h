@@ -51,6 +51,25 @@ inline gf2_polynomial hex_to_gf2_polynomial(std::string hexadecimal_number) {
   return make_gf2_polynomial(coeff);
 }
 
+inline std::string gf2_polynomial_to_hex(const gf2_polynomial& g) {
+  std::string s;
+  const size_t sz = g.coefficients.size();
+  s.reserve(sz/4+1);
+  for (size_t i = 0; i < sz; i+=4) {
+    int i0 = g.coefficients[i];
+    int i1 = i+1 < sz ? g.coefficients[i+1]:0;
+    int i2 = i+2 < sz ? g.coefficients[i+2]:0;
+    int i3 = i+3 < sz ? g.coefficients[i+3]:0;
+    int h = i0+2*i1+4*i2+8*i3;
+    if (h<10)
+      s.push_back(h+'0');
+    else
+      s.push_back(h-10+'a');
+  }
+  std::reverse(s.begin(), s.end());
+  return s;
+}
+
 inline gf2_polynomial make_xn(uint64_t n) {
   gf2_polynomial g;
   for (size_t i = 0; i < n; ++i)
