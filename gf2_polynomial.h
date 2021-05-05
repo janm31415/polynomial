@@ -287,4 +287,32 @@ inline std::vector<gf2_polynomial> square_free_factorization(const gf2_polynomia
   return R;
 }
 
+//source: https://en.wikipedia.org/wiki/Factorization_of_polynomials_over_finite_fields
+std::vector<std::pair<gf2_polynomial, uint64_t>> distinct_degree_factorization(const gf2_polynomial& f) {
+/*
+    Input: A monic square-free polynomial f in GF2
+    Output: The set of all pairs (g, d), such that
+             f has an irreducible factor of degree d and
+             g is the product of all monic irreducible factors of f of degree d.
+*/
+  std::vector<std::pair<gf2_polynomial, uint64_t>> S;
+  int i = 1;
+  auto fstar = f;
+  auto unit = make_xn(0);
+  while (degree(fstar)>=2*i) {
+    auto g = gcd(fstar, make_xn((uint64_t)pow(2,i)) - make_xn(1));
+    if (g != unit) {
+      S.emplace_back(g, i);
+      fstar = fstar/g;
+    }
+    ++i;
+  }
+  if (fstar != unit) {
+    S.emplace_back(fstar, degree(fstar));
+  }
+  if (S.empty())
+    S.emplace_back(f, 1);
+  return S;
+}
+
 #endif

@@ -176,8 +176,21 @@ namespace {
     TEST_ASSERT(gf2_polynomial_to_hex(p) == gf2_polynomial_to_hex(g));
   }
   
+  void test_distinct_degree_factorization() {
+    gf2_polynomial g = make_gf2_polynomial({{0,0,1,1,0,1,0,0,1}});
+    auto S = distinct_degree_factorization(g);
+    auto p = make_xn(0);
+    for (auto s : S) {
+      //std::cout << s.first << std::endl;
+      p = p*s.first;
+    }
+    TEST_ASSERT(p == g);
+    TEST_EQ(3, S.size());
+  }
+  
   //46508fb7  6677e201
   void test_factorization() {
+  /*
     auto product = hex_to_gf2_polynomial("b0c152f9")*hex_to_gf2_polynomial("ebf2831f");
     gf2_polynomial g = hex_to_gf2_polynomial("6677e20146508fb7");
     std::cout << "Product: " << gf2_polynomial_to_hex(product) << std::endl;
@@ -191,6 +204,20 @@ namespace {
       p = p * R[i];
     std::cout << "Product of factors: " << gf2_polynomial_to_hex(p) << std::endl;
     std::cout << "Original polynomial: " << gf2_polynomial_to_hex(g) << std::endl;
+    */
+    //gf2_polynomial g = hex_to_gf2_polynomial("6677e20146508fb7");
+    //gf2_polynomial s = sqrt(g);
+    //std::cout << "Original polynomial: " << gf2_polynomial_to_hex(g) << std::endl;
+    //std::cout << "sqrt^2: " << gf2_polynomial_to_hex(power(s,2)) << std::endl;
+    gf2_polynomial g = hex_to_gf2_polynomial("6677e20146508fb7");
+    //gf2_polynomial g = make_gf2_polynomial({{0,0,1,1,0,1,0,0,1}});
+    //auto S = distinct_degree_factorization(g);
+    //auto p = make_xn(0);
+    //for (auto s : S) {
+    //  std::cout << gf2_polynomial_to_hex(s.first) << std::endl;
+    //  p = p*s.first;
+    //}
+    //std::cout << p << std::endl;
   }
 
 }
@@ -214,5 +241,6 @@ void run_all_gf2_polynomial_tests() {
   test_hex_to_gf2_polynomial();
   test_sqrt();
   test_square_free_factorization();
-  //test_factorization();
+  test_distinct_degree_factorization();
+  test_factorization();
 }
