@@ -123,12 +123,16 @@ namespace {
     div = euclidean_division(a, b);
     //std::cout << a << " / " << b << " = (" << div.first << "," << div.second << ")\n";
     TEST_ASSERT(a == div.first*b + div.second);
+    TEST_ASSERT(a/b == div.first);
+    TEST_ASSERT(a%b == div.second);
     
     b = make_gf2_polynomial({{0,0,0,1,1,0,1,0}});
     a = make_gf2_polynomial({{0,1,1,1}});
     div = euclidean_division(a, b);
     //std::cout << a << " / " << b << " = (" << div.first << "," << div.second << ")\n";
     TEST_ASSERT(a == div.first*b + div.second);
+    TEST_ASSERT(a/b == div.first);
+    TEST_ASSERT(a%b == div.second);
   }
 }
 

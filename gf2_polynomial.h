@@ -3,10 +3,6 @@
 
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <bitset>
-#include <cmath>
-#include <stdint.h>
 
 struct gf2_polynomial {
   std::vector<uint64_t> coefficients;
@@ -165,6 +161,14 @@ inline std::pair<gf2_polynomial, gf2_polynomial> euclidean_division(const gf2_po
       r = r - b*make_xn(n);
   }
   return std::make_pair(simplify(q), simplify(r));
+}
+
+inline gf2_polynomial operator / (const gf2_polynomial& a, const gf2_polynomial& b) {
+  return euclidean_division(a,b).first;
+}
+
+inline gf2_polynomial operator % (const gf2_polynomial& a, const gf2_polynomial& b) {
+  return euclidean_division(a,b).second;
 }
 
 #endif
