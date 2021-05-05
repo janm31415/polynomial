@@ -150,6 +150,11 @@ namespace {
     TEST_ASSERT(a%g==make_gf2_polynomial({0}));
     TEST_ASSERT(b%g==make_gf2_polynomial({0}));
   }
+  
+  void test_hex_to_gf2_polynomial() {
+    gf2_polynomial g = hex_to_gf2_polynomial("c");
+    TEST_ASSERT(g==make_gf2_polynomial({0,0,1,1}));
+  }
 }
 
 
@@ -168,4 +173,5 @@ void run_all_gf2_polynomial_tests() {
   test_xn();
   test_euclidean_division();
   test_gcd();
+  test_hex_to_gf2_polynomial();
 }

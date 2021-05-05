@@ -29,6 +29,28 @@ inline gf2_polynomial make_gf2_polynomial(const std::vector<uint64_t>& coef) {
   return g;
 }
 
+inline gf2_polynomial hex_to_gf2_polynomial(std::string hexadecimal_number) {
+  std::vector<uint64_t> coeff;
+  coeff.reserve(4*hexadecimal_number.length());
+  while (!hexadecimal_number.empty()) {
+    char ch = hexadecimal_number.back();
+    int i = 0;
+    if (ch >= '0' && ch <= '9')
+      i = (int)(ch-'0');
+    else if (ch >= 'A' && ch <= 'F')
+      i = (int)(ch-'A'+10);
+    else if (ch >= 'a' && ch <= 'f')
+      i = (int)(ch-'a'+10);
+    else throw std::runtime_error("make_gf2_polynomial: input string is not a hexadecimal number!");
+    coeff.push_back(i&1?1:0);
+    coeff.push_back(i&2?1:0);
+    coeff.push_back(i&4?1:0);
+    coeff.push_back(i&8?1:0);
+    hexadecimal_number.pop_back();
+  }
+  return make_gf2_polynomial(coeff);
+}
+
 inline gf2_polynomial make_xn(uint64_t n) {
   gf2_polynomial g;
   for (size_t i = 0; i < n; ++i)
