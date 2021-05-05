@@ -195,7 +195,7 @@ inline std::pair<gf2_polynomial, gf2_polynomial> euclidean_division(const gf2_po
   auto deg_a = degree(a);
   uint64_t qsize = deg_a>d?deg_a-d+1:1;
   q.coefficients.resize(qsize);
-  while(degree(r) >= d) {
+  while(!r.coefficients.empty() && degree(r) >= d) {
     uint64_t n = degree(r) - degree(b);
     q.coefficients[n] = (r.coefficients[degree(r)] / b.coefficients[degree(b)])&1;
     if (q.coefficients[n])
@@ -222,6 +222,69 @@ inline gf2_polynomial gcd(gf2_polynomial a, gf2_polynomial b) {
     r = a % b;
   }
   return b;
+}
+
+inline gf2_polynomial power(const gf2_polynomial& a, int p) {
+  gf2_polynomial result = make_gf2_polynomial({1});
+  for (int i = 1; i <= p; ++i)
+    result = result * a;
+  return result;
+}
+
+inline gf2_polynomial sqrt(const gf2_polynomial& a) {
+  gf2_polynomial result;
+  for (int i = 0; i < a.coefficients.size(); ++i)
+    if (i%2==0) {
+      result.coefficients.push_back(a.coefficients[i]);
+    }
+  return result;
+}
+
+/*
+inline std::pair<gf2_polynomial, gf2_polynomial> split_in_square_free_part(const gf2_polynomial& a) {
+  gf2_polynomial d = derivative(a);
+  gf2_polynomial g = gcd(a, d);
+  gf2_polynomial r = a/g;
+  return std::pair<gf2_polynomial, gf2_polynomial>(r, g);
+}
+*/
+
+//source: https://en.wikipedia.org/wiki/Factorization_of_polynomials_over_finite_fields
+inline std::vector<gf2_polynomial> square_free_factorization(const gf2_polynomial& f) {
+  std::vector<gf2_polynomial> R;
+  R.push_back(make_gf2_polynomial({1}));
+  
+  //Make w be the product (without multiplicity) of all factors of f that have
+  //multiplicity not divisible by p
+    
+  auto c = gcd(f, derivative(f));
+  auto w = f/c;
+  
+  // Step 1: Identify all factors in w
+  int i = 1;
+  while (w != R.front()) {
+    auto y = gcd(w, c);
+    auto fac = w/y;
+    R.push_back(power(fac, i));
+    w = y;
+    c = c/y;
+    ++i;
+  }
+  // c is now the product (with multiplicity) of the remaining factors of f
+   
+  // Step 2: Identify all remaining factors using recursion
+  // Note that these are the factors of f that have multiplicity divisible by p
+  if (c != R.front()) {
+    c = sqrt(c);
+    auto R2 = square_free_factorization(c);
+    for (const auto& factor : R2) {
+      if (factor != R.front())
+        R.push_back(power(factor, 2));
+      }
+  }
+  if (R.size()>1)
+    R.erase(R.begin());
+  return R;
 }
 
 #endif

@@ -157,6 +157,42 @@ namespace {
     TEST_ASSERT(gf2_polynomial_to_hex(g)==std::string("c"));
     TEST_ASSERT(gf2_polynomial_to_hex(hex_to_gf2_polynomial("a466cfdc"))==std::string("a466cfdc"));
   }
+  
+  void test_sqrt() {
+    gf2_polynomial g = make_gf2_polynomial({{1,0,1}});
+    auto s = sqrt(g);
+    TEST_ASSERT(s==make_gf2_polynomial({1,1}));
+    g = hex_to_gf2_polynomial("a466cfdc");
+    TEST_ASSERT(g == sqrt(power(g,2)));
+  }
+  
+  void test_square_free_factorization() {
+    gf2_polynomial g = hex_to_gf2_polynomial("c");
+    auto R = square_free_factorization(g);
+    auto p = R.front();
+    for (int i = 1; i < R.size(); ++i)
+      p = p * R[i];
+    TEST_EQ(2, R.size());
+    TEST_ASSERT(gf2_polynomial_to_hex(p) == gf2_polynomial_to_hex(g));
+  }
+  
+  //46508fb7  6677e201
+  void test_factorization() {
+    auto product = hex_to_gf2_polynomial("b0c152f9")*hex_to_gf2_polynomial("ebf2831f");
+    gf2_polynomial g = hex_to_gf2_polynomial("6677e20146508fb7");
+    std::cout << "Product: " << gf2_polynomial_to_hex(product) << std::endl;
+    std::cout << "Input: " << gf2_polynomial_to_hex(g) << std::endl;
+    auto R = square_free_factorization(g);
+    for (auto f : R) {
+      std::cout << gf2_polynomial_to_hex(f) << std::endl;
+    }
+    auto p = R.front();
+    for (int i = 1; i < R.size(); ++i)
+      p = p * R[i];
+    std::cout << "Product of factors: " << gf2_polynomial_to_hex(p) << std::endl;
+    std::cout << "Original polynomial: " << gf2_polynomial_to_hex(g) << std::endl;
+  }
+
 }
 
 
@@ -176,4 +212,7 @@ void run_all_gf2_polynomial_tests() {
   test_euclidean_division();
   test_gcd();
   test_hex_to_gf2_polynomial();
+  test_sqrt();
+  test_square_free_factorization();
+  //test_factorization();
 }
