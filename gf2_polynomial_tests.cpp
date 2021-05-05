@@ -100,6 +100,36 @@ namespace {
     TEST_ASSERT(g2==make_gf2_polynomial({{0,0,1}}));
   }
   
+  void test_xn() {
+    gf2_polynomial g = make_xn(3);
+    TEST_ASSERT(g==make_gf2_polynomial({{0,0,0,1}}));
+    g = make_xn(2);
+    TEST_ASSERT(g==make_gf2_polynomial({{0,0,1}}));
+    g = make_xn(1);
+    TEST_ASSERT(g==make_gf2_polynomial({{0,1}}));
+    g = make_xn(0);
+    TEST_ASSERT(g==make_gf2_polynomial({1}));
+  }
+  
+  void test_euclidean_division() {
+    gf2_polynomial a = make_gf2_polynomial({{0,0,0,1,1}});
+    gf2_polynomial b = make_gf2_polynomial({{0,0,1}});
+    auto div = euclidean_division(a, b);
+    TEST_ASSERT(div.first==make_gf2_polynomial({{0,1,1}}));
+    TEST_ASSERT(div.second==make_gf2_polynomial({0}));
+    
+    a = make_gf2_polynomial({{0,0,0,1,1,0,1,0}});
+    b = make_gf2_polynomial({{0,1,1,1}});
+    div = euclidean_division(a, b);
+    //std::cout << a << " / " << b << " = (" << div.first << "," << div.second << ")\n";
+    TEST_ASSERT(a == div.first*b + div.second);
+    
+    b = make_gf2_polynomial({{0,0,0,1,1,0,1,0}});
+    a = make_gf2_polynomial({{0,1,1,1}});
+    div = euclidean_division(a, b);
+    //std::cout << a << " / " << b << " = (" << div.first << "," << div.second << ")\n";
+    TEST_ASSERT(a == div.first*b + div.second);
+  }
 }
 
 
@@ -115,4 +145,6 @@ void run_all_gf2_polynomial_tests() {
   test_sub();
   test_mul();
   test_derivative();
+  test_xn();
+  test_euclidean_division();
 }

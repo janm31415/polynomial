@@ -21,9 +21,23 @@ std::vector<uint64_t> simplify_gf2_coefficients(const std::vector<uint64_t>& coe
   return c;
 }
 
+inline gf2_polynomial simplify(const gf2_polynomial& g) {
+  gf2_polynomial ret;
+  ret.coefficients = simplify_gf2_coefficients(g.coefficients);
+  return ret;
+}
+
 inline gf2_polynomial make_gf2_polynomial(const std::vector<uint64_t>& coef) {
   gf2_polynomial g;
   g.coefficients = simplify_gf2_coefficients(coef);
+  return g;
+}
+
+inline gf2_polynomial make_xn(uint64_t n) {
+  gf2_polynomial g;
+  for (size_t i = 0; i < n; ++i)
+    g.coefficients.push_back(0);
+  g.coefficients.push_back(1);
   return g;
 }
 
@@ -124,13 +138,33 @@ inline gf2_polynomial operator * (const gf2_polynomial& a, const gf2_polynomial&
 inline gf2_polynomial derivative(const gf2_polynomial& p) {
   std::vector<uint64_t> coeff;
   coeff.reserve(p.coefficients.size());
-  for (size_t i = 1; i < p.coefficients.size(); ++i) {  
+  for (size_t i = 1; i < p.coefficients.size(); ++i) {
     if ((i&1)==0 || (p.coefficients[i]&1)==0)
       coeff.push_back(0);
     else
       coeff.push_back(1);
   }
   return make_gf2_polynomial(coeff);
+}
+
+/*
+The Euclidean division provides two polynomials q(x), the quotient and r(x), the remainder such that
+a(x)=q0(x)b(x)+r0(x) and deg⁡(r0(x)) < deg⁡(b(x))
+*/
+inline std::pair<gf2_polynomial, gf2_polynomial> euclidean_division(const gf2_polynomial& a, const gf2_polynomial& b) {
+  gf2_polynomial r(a);
+  gf2_polynomial q;
+  auto d = degree(b);
+  auto deg_a = degree(a);
+  uint64_t qsize = deg_a>d?deg_a-d+1:1;
+  q.coefficients.resize(qsize);
+  while(degree(r) >= d) {
+    uint64_t n = degree(r) - degree(b);
+    q.coefficients[n] = (r.coefficients[degree(r)] / b.coefficients[degree(b)])&1;
+    if (q.coefficients[n])
+      r = r - b*make_xn(n);
+  }
+  return std::make_pair(simplify(q), simplify(r));
 }
 
 #endif
