@@ -240,6 +240,13 @@ inline gf2_polynomial sqrt(const gf2_polynomial& a) {
   return result;
 }
 
+inline gf2_polynomial make_random_gf2_polynomial(uint64_t n) {
+  gf2_polynomial p;
+  for (uint64_t i = 0; i <= n; ++i)
+    p.coefficients.push_back(rand()&1);
+  return simplify(p);
+}
+
 /*
 inline std::pair<gf2_polynomial, gf2_polynomial> split_in_square_free_part(const gf2_polynomial& a) {
   gf2_polynomial d = derivative(a);
@@ -313,6 +320,39 @@ std::vector<std::pair<gf2_polynomial, uint64_t>> distinct_degree_factorization(c
   if (S.empty())
     S.emplace_back(f, 1);
   return S;
+}
+
+std::vector<gf2_polynomial> equal_degree_factorization(const gf2_polynomial& f, uint64_t d) {
+/*
+Input: A monic square free polynomial f in GF2 of degree n = rd, which
+       has r >= 2 irreducible factors each of degree d.
+Output: The set of monic irreducible factors of f.
+*/
+  std::vector<gf2_polynomial> factors;
+  factors.push_back(f);
+  auto unit = make_xn(0);
+  
+  uint64_t n = degree(f);
+  
+  uint64_t r = n/d;
+  
+  while (factors.size() < r) {
+    auto h = make_random_gf2_polynomial(n-1);
+    int m = (pow(2, d)-1) / 2;
+    auto g = (power(h, m) - unit)%f;
+    for (size_t i = 0; i < factors.size(); ++i) {
+      const auto& u = factors[i];
+      if (degree(u)>d) {
+        auto gcd_g_u = gcd(g, u);
+        if (gcd_g_u != unit && gcd_g_u != u) {
+          factors.push_back(u/gcd_g_u);
+          factors[i] = gcd_g_u;  
+        }
+      }
+    }
+  }
+  
+  return factors;
 }
 
 #endif
