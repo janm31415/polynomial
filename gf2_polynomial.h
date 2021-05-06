@@ -5,11 +5,11 @@
 #include <vector>
 
 struct gf2_polynomial {
-  std::vector<uint64_t> coefficients;
+  std::vector<uint8_t> coefficients;
 };
 
-std::vector<uint64_t> simplify_gf2_coefficients(const std::vector<uint64_t>& coeff) {
-  std::vector<uint64_t> c(coeff);
+std::vector<uint8_t> simplify_gf2_coefficients(const std::vector<uint8_t>& coeff) {
+  std::vector<uint8_t> c(coeff);
   while (!c.empty() && ((c.back()&1)==0))
     c.pop_back();
   for (auto& v : c)
@@ -23,14 +23,14 @@ inline gf2_polynomial simplify(const gf2_polynomial& g) {
   return ret;
 }
 
-inline gf2_polynomial make_gf2_polynomial(const std::vector<uint64_t>& coef) {
+inline gf2_polynomial make_gf2_polynomial(const std::vector<uint8_t>& coef) {
   gf2_polynomial g;
   g.coefficients = simplify_gf2_coefficients(coef);
   return g;
 }
 
 inline gf2_polynomial hex_to_gf2_polynomial(std::string hexadecimal_number) {
-  std::vector<uint64_t> coeff;
+  std::vector<uint8_t> coeff;
   coeff.reserve(4*hexadecimal_number.length());
   while (!hexadecimal_number.empty()) {
     char ch = hexadecimal_number.back();
@@ -159,7 +159,7 @@ inline gf2_polynomial operator - (const gf2_polynomial& a, const gf2_polynomial&
 */
 inline gf2_polynomial operator * (const gf2_polynomial& a, const gf2_polynomial& b) {
   uint64_t a_index = 0;
-  std::vector<uint64_t> coeff;
+  std::vector<uint8_t> coeff;
   coeff.reserve(a.coefficients.size()*b.coefficients.size());
   while (a_index < a.coefficients.size()) {
     if (a.coefficients[a_index]&1) {
@@ -173,7 +173,7 @@ inline gf2_polynomial operator * (const gf2_polynomial& a, const gf2_polynomial&
 }
 
 inline gf2_polynomial derivative(const gf2_polynomial& p) {
-  std::vector<uint64_t> coeff;
+  std::vector<uint8_t> coeff;
   coeff.reserve(p.coefficients.size());
   for (size_t i = 1; i < p.coefficients.size(); ++i) {
     if ((i&1)==0 || (p.coefficients[i]&1)==0)
@@ -194,12 +194,16 @@ inline std::pair<gf2_polynomial, gf2_polynomial> euclidean_division(const gf2_po
   auto d = degree(b);
   auto deg_a = degree(a);
   uint64_t qsize = deg_a>d?deg_a-d+1:1;
-  q.coefficients.resize(qsize);
-  while(!r.coefficients.empty() && degree(r) >= d) {
-    uint64_t n = degree(r) - degree(b);
-    q.coefficients[n] = (r.coefficients[degree(r)] / b.coefficients[degree(b)])&1;
-    if (q.coefficients[n])
+  q.coefficients.resize(qsize,0);
+  uint64_t deg_r = degree(r);
+  while(!r.coefficients.empty() && deg_r >= d) {
+    uint64_t deg_b = degree(b);
+    uint64_t n = deg_r - deg_b;
+    q.coefficients[n] = 1;//(r.coefficients[deg_r] / b.coefficients[deg_b])&1;
+    //if (q.coefficients[n]) {
       r = r - b*make_xn(n);
+      deg_r = degree(r);
+    //  }
   }
   return std::make_pair(simplify(q), simplify(r));
 }
@@ -327,6 +331,8 @@ std::vector<gf2_polynomial> equal_degree_factorization(const gf2_polynomial& f, 
 Input: A monic square free polynomial f in GF2 of degree n = rd, which
        has r >= 2 irreducible factors each of degree d.
 Output: The set of monic irreducible factors of f.
+
+Source for p=2: https://math.stackexchange.com/questions/1636518/how-do-i-apply-the-cantor-zassenhaus-algorithm-to-mathbbf-2
 */
   std::vector<gf2_polynomial> factors;
   factors.push_back(f);
@@ -338,8 +344,17 @@ Output: The set of monic irreducible factors of f.
   
   while (factors.size() < r) {
     auto h = make_random_gf2_polynomial(n-1);
-    int m = (pow(2, d)-1) / 2;
-    auto g = (power(h, m) - unit)%f;
+    //std::cout << gf2_polynomial_to_hex(h) << "\n";
+    auto g = h;
+    //g = h + h^2 + h^4 + ... + h^(2^(d-1))
+    auto last_term = h;
+    for (int j = 1; j < d; ++j) {
+      last_term = (last_term*last_term) % f;
+      g = g + last_term;
+      }
+    //g = g%f;
+    if (g.coefficients.empty())
+      continue;
     for (size_t i = 0; i < factors.size(); ++i) {
       const auto& u = factors[i];
       if (degree(u)>d) {
