@@ -264,15 +264,6 @@ inline gf2_polynomial make_random_gf2_polynomial(uint64_t n) {
   return simplify(p);
 }
 
-/*
-inline std::pair<gf2_polynomial, gf2_polynomial> split_in_square_free_part(const gf2_polynomial& a) {
-  gf2_polynomial d = derivative(a);
-  gf2_polynomial g = gcd(a, d);
-  gf2_polynomial r = a/g;
-  return std::pair<gf2_polynomial, gf2_polynomial>(r, g);
-}
-*/
-
 //source: https://en.wikipedia.org/wiki/Factorization_of_polynomials_over_finite_fields
 inline std::vector<gf2_polynomial> square_free_factorization(const gf2_polynomial& f) {
   std::vector<gf2_polynomial> R;
