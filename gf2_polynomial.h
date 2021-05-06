@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 struct gf2_polynomial {
   std::vector<uint8_t> coefficients;
@@ -184,6 +185,18 @@ inline gf2_polynomial derivative(const gf2_polynomial& p) {
   return make_gf2_polynomial(coeff);
 }
 
+inline void minus_b_times_xn(gf2_polynomial& r, const gf2_polynomial& b, uint64_t n)
+  {
+  if (r.coefficients.size() < b.coefficients.size()+n)
+    r.coefficients.resize(b.coefficients.size()+n, 0);
+  for (uint64_t i = 0; i < b.coefficients.size(); ++i) {
+    r.coefficients[i+n] += b.coefficients[i];
+    r.coefficients[i+n] &= 1;
+  }
+  while (!r.coefficients.empty() && ((r.coefficients.back()&1)==0))
+    r.coefficients.pop_back();
+  }
+
 /*
 The Euclidean division provides two polynomials q(x), the quotient and r(x), the remainder such that
 a(x)=q0(x)b(x)+r0(x) and deg⁡(r0(x)) < deg⁡(b(x))
@@ -199,11 +212,9 @@ inline std::pair<gf2_polynomial, gf2_polynomial> euclidean_division(const gf2_po
   while(!r.coefficients.empty() && deg_r >= d) {
     uint64_t deg_b = degree(b);
     uint64_t n = deg_r - deg_b;
-    q.coefficients[n] = 1;//(r.coefficients[deg_r] / b.coefficients[deg_b])&1;
-    //if (q.coefficients[n]) {
-      r = r - b*make_xn(n);
-      deg_r = degree(r);
-    //  }
+    q.coefficients[n] = 1;
+    minus_b_times_xn(r, b, n);
+    deg_r = degree(r);
   }
   return std::make_pair(simplify(q), simplify(r));
 }
@@ -221,8 +232,10 @@ inline gf2_polynomial gcd(gf2_polynomial a, gf2_polynomial b) {
     std::swap(a.coefficients, b.coefficients);
   gf2_polynomial r = a % b;
   while(!r.coefficients.empty()) {
-    a = b;
-    b = r;
+    std::swap(a.coefficients, b.coefficients);
+    std::swap(r.coefficients, b.coefficients);
+    //a = b;
+    //b = r;
     r = a % b;
   }
   return b;
@@ -344,12 +357,13 @@ Source for p=2: https://math.stackexchange.com/questions/1636518/how-do-i-apply-
   
   while (factors.size() < r) {
     auto h = make_random_gf2_polynomial(n-1);
-    //std::cout << gf2_polynomial_to_hex(h) << "\n";
     auto g = h;
     //g = h + h^2 + h^4 + ... + h^(2^(d-1))
     auto last_term = h;
     for (int j = 1; j < d; ++j) {
       last_term = (last_term*last_term) % f;
+      if (last_term.coefficients.empty())
+        break;
       g = g + last_term;
       }
     //g = g%f;
